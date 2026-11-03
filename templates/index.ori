@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="{{ current_locale }}">
+<head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        {% for al in alternate_locales %}<link rel="alternate" hreflang="{{ al.lang }}" href="{{ al.link }}" />
+        {% endfor %}
+        {% if web_version %}
+        <title>Tzima translate - {{ _h("Free and Open Source Machine Translation API") }} 🌐</title>
+        <meta name="description" content="{{ _h('Free and Open Source Machine Translation API. Free to download, offline capable and easy to setup. Run your own API server in just a few minutes.') }}">
+        <meta name="keywords" content="{{ _h('translation') }},{{ _h('api') }}">
+        {% elif frontend_title %}
+        <title>{{ frontend_title }}</title>
+        {% endif %}
+
+        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+        <link rel="preload" href="{{ url_for('static', filename='icon.svg') }}" as="image" />
+        <link rel="preload" href="{{ url_for('static', filename='js/vue@2.js') }}" as="script">
+        <link rel="preload" href="{{ url_for('static', filename='js/materialize.min.js') }}" as="script">
+        <link rel="preload" href="{{ url_for('static', filename='js/prism.min.js') }}" as="script">
+        <link rel="preload" href="js/app.js?v={{ version }}" as="script">
+
+        <link rel="preload" href="{{ url_for('static', filename='css/materialize.min.css') }}" as="style"/>
+        <link rel="preload" href="{{ url_for('static', filename='css/material-icons.css') }}" as="style"/>
+        <link rel="preload" href="{{ url_for('static', filename='css/prism.min.css') }}" as="style"/>
+        <link rel="preload" href="{{ url_for('static', filename='css/main.css') }}?v={{ version }}" as="style"/>
+
+        <meta property="og:title" content="tzima translate" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://translate.tzima.gr" />
+        <meta property="og:description" name="description" class="swiftype" content="{{ _h('Free and Open Source Machine Translation API.') }}"/>
+
+        <script src="{{ url_for('static', filename='js/vue@2.js') }}"></script>
+
+        <!-- Compiled and minified CSS -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/materialize.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/material-icons.css') }}" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/prism.min.css') }}" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v={{ version }}" />
+
+        <meta name="color-scheme" content="light dark">
+</head>
+
+<body>
+        <header>
+                <nav role="navigation">
+                        <div class="nav-wrapper container">
+                                <button data-target="nav-mobile" class="sidenav-trigger"><i class="material-icons">menu</i></button>
+                                <a id="logo-container" href="#" class="brand-logo noline">
+                                        <img src="{{ url_for('static', filename='icon.svg') }}" alt="" class="logo">
+                                        <span>tzima translate</span>
+                                </a>
+                                <ul id="nav" class="right hide-on-med-and-down top-nav position-relative">
+                                        {% set menulinks %}
+                                        {% if not hide_api %}
+                                        <li><a href="{% if web_version %}https://docs.libretranslate.com{% else %}{{ swagger_url }}{% endif %}">{{ _h("API Docs") }}</a></li>
+                                        {% endif %}
+                                        {% if get_api_key_link %}
+                                        <li><a href="{{ get_api_key_link }}">{{ _h("Get API Key") }}</a></li>
+                                        {% endif %}
+                                        {% if api_keys %}
+                                        <li><a class="noline" href="javascript:setApiKey()" title="{{ _h('Set API Key') }}" aria-label="{{ _h('Set API Key') }}"><i class="material-icons">vpn_key</i></a></li>
+                                        {% endif %}
+                                        <li class="change-language"><a class="noline" href="javascript:void(0)" title="{{ _h('Change language') }}"><i class="material-icons">language</i></a>
+                                        </li>
+                                        <li class="locale-panel">
+                                                <select id="locales" onchange="changeLocale(this)">
+                                                        {% for l in available_locales %}<option value="{{ l['code'] }}" {{ 'selected' if current_locale == l['code'] else ''}}>{{ l['name'].capitalize() }}</option>{% endfor %}
+                                                </select>
+                                        </li>
+                                        <li class="change-theme"><a class="noline" href="javascript:toggleColorScheme()" title="{{ _h('Toggle dark/light mode') }}"><i class="material-icons">lightbulb_outline</i></a>
+                                        </li>
+                                        {% endset %}
+                                        {{ menulinks }}
+                                </ul>
+                                <ul id="nav-mobile" class="sidenav">
+                                        {{ menulinks }}
+                                </ul>
+                                <script>
+                                        var localeLinks = {
+                                                {% for al in alternate_locales %}"{{ al.lang }}": "{{ al.link }}"{% if not loop.last %},{% endif %}
+                                                {% endfor %}
+                                        };
+
+                                        function changeLocale(slt){
+                                                var lang = slt.value;
+                                                if (localeLinks[lang]) location.href = localeLinks[lang];
+                                                else location.href = '?lang=' + slt.value;
+                                        }
+
+                                        var btnChangeLangs = document.getElementsByClassName("change-language");
+                                        var localePanels = document.getElementsByClassName("locale-panel");
+
+                                        for (var i = 0; i < btnChangeLangs.length; i++){
+                                                (function(btn){
+                                                        btn.addEventListener('click', function(e){
+                                                                e.stopPropagation();
+                                                                btn.classList.toggle('clicked');
+                                                        });
+                                                })(btnChangeLangs[i]);
+                                        }
+                                        for (var i = 0; i < localePanels.length; i++){
+                                                localePanels[i].addEventListener('click', function(e){
+                                                        e.stopPropagation();
+                                                });
+                                        }
+                                        document.addEventListener('click', function(){
+                                                for (var i = 0; i < btnChangeLangs.length; i++){
+                                                        btnChangeLangs[i].classList.remove('clicked');
+                                                }
+                                        });
+                                </script>
+                        </div>
+                </nav>
+        </header>
+
+        <main id="app">
+        <div class="section no-pad-bot center" v-if="loading">
+                <div class="container">
+                        <div class="row">
+                                <div class="preloader-wrapper active">
+                                <div class="spinner-layer spinner-blue-only">
+                                        <div class="circle-clipper left">
+                                        <div class="circle"></div>
+                                        </div><div class="gap-patch">
+                                        <div class="circle"></div>
+                                        </div><div class="circle-clipper right">
+                                        <div class="circle"></div>
+                                        </div>
+                                </div>
+                                </div>
+                        </div>
+                </div>
+        </div>
+
+        <div v-else-if="error" class="component">
+                <div class="section no-pad-bot">
+                        <div class="container">
+                                <div class="row">
+                                        <div class="col s12 m12">
+                                                <div class="card horizontal">
+                                                        <div class="card-stacked">
+                                                        <div class="card-content">
+                                                                <i class="material-icons">warning</i><p> [[ error ]]</p>
+                                                        </div>
+                                                        <div class="card-action">
+                                                                <a href="#" @click="dismissError">{{ _h("Dismiss") }}</a>
+                                                        </div>
+                                                        </div>
+                                                </div>
+                                        </div>
+                                </div>
+                        </div>
+                </div>
+        </div>
+
+        <div v-else class="component">
+                <div class="section no-pad-bot">
+                        <div class="container">
+                                <div class="row">
+                                        <h3 class="header center">
+                                                tzima translate
+                                        </h3>
+                                        <div id="translation-type-btns" class="s12 center" v-if="filesTranslation === true">
+                                                <button type="button" class="btn btn-switch-type" @click="switchType('text')" :class="{'active': translationType === 'text'}" :disabled="disableInput">
+                                                        <i aria-hidden="true" class="material-icons">title</i>
+                                                        <span class="btn-text">{{ _h("Translate Text") }}</span>
+                                                </button>
+                                                <button type="button" class="btn btn-switch-type" @click="switchType('files')" :class="{'active': translationType === 'files'}" :disabled="disableInput">
+                                                        <i aria-hidden="true" class="material-icons">description</i>
+                                                        <span class="btn-text">{{ _h("Translate Files") }}</span>
+                                                </button>
+                                        </div>
+                                        <form id="translation-form" class="col s12" @submit.prevent>
+                                                <div class="row mb-0">
+                                                        <div class="col s6 language-select">
+                                                                <span id="sourceLangLabel">{{ _h("Translate from") }}</span>
+                                                                <span v-if="detectedLangText !== ''">[[ detectedLangText ]]</span>
+                                                                <select aria-labelledby="sourceLangLabel" class="browser-default" v-model="sourceLang" ref="sourceLangDropdown" @change="handleInput">
+                                                                        <template v-for="option in sourceLangs">
+                                                                            <option :value="option.code">[[ option.name ]]</option>
+                                                                        </template>
+                                                                </select>
+                                                        </div>
+
+                                                        <div class="col s6 language-select">
+                                                                <a href="javascript:void(0)" @click="swapLangs" class="btn-switch-language" aria-label="{{ _h('Swap source and target languages') }}">
+                                                                        <i class="material-icons">swap_horiz</i>
+                                                                </a>
+                                                                <span id="targetLangLabel">{{ _h("Translate into") }}</span>
+                                                                <select aria-labelledby="targetLangLabel" class="browser-default" v-model="targetLang" ref="targetLangDropdown" @change="handleInput">
+                                                                        <template v-for="option in targetLangs">
+                                                                            <option v-if="option.code !== 'auto'" :value="option.code">[[ option.name ]]</option>
+                                                                        </template>
+                                                                </select>
+                                                        </div>
+                                                </div>
+
+                                                <!-- Text Translation View -->
+                                                <div class="row" v-if="translationType === 'text'">
+                                                        <div class="input-field textarea-container col s12 m6">
+                                                                <label for="textarea1" class="sr-only">
+                                                                        {{ _h("Text to translate") }}
+                                                                </label>
+                                                                <textarea id="textarea1" :maxLength="charactersLimit" v-model="inputText" @input="handleInput" ref="inputTextarea" dir="auto" :disabled="disableInput"></textarea>
+                                                                <button class="btn-delete-text" title="{{ _h('Delete text') }}" aria-label="{{ _h('Delete text') }}" @click="deleteText">
+                                                                        <i class="material-icons">close</i>
+                                                                </button>
+                                                                <div class="characters-limit-container" v-if="charactersLimit !== -1">
+                                                                        <label>[[ inputText.length ]] / [[ charactersLimit ]]</label>
+                                                                </div>
+                                                        </div>
+                                                        <div class="input-field textarea-container col s12 m6">
+                                                                <label for="textarea2" class="sr-only">
+                                                                        {{ _h("Translated text") }}
+                                                                </label>
+                                                                <textarea id="textarea2" v-model="translatedText" ref="translatedTextarea" dir="auto" v-bind:readonly="suggestions && !isSuggesting" :disabled="disableInput"></textarea>
+                                                                        <div class="actions">
+                                                                                <button v-if="!isSuggesting" class="btn-action btn-copy-translated" @click="copyText">
+                                                                                        <span>[[ copyTextLabel ]]</span> <i class="material-icons" aria-hidden="true">content_copy</i>
+                                                                                </button>
+                                                                        </div>
+                                                                <div class="position-relative">
+                                                                        <div class="progress translate" v-if="loadingTranslation">
+                                                                                <div class="indeterminate"></div>
+                                                                        </div>
+                                                                </div>
+                                                        </div>
+                                                </div>
+
+                                                <!-- File Translation View -->
+                                                <div class="row" v-if="translationType === 'files'">
+                                                        <div class="col s12 center file-upload-container">
+                                                                <div class="file-field input-field">
+                                                                        <div class="btn">
+                                                                                <span>{{ _h("Select File") }}</span>
+                                                                                <input type="file" ref="fileInput" @change="handleFileSelect">
+                                                                        </div>
+                                                                        <div class="file-path-wrapper">
+                                                                                <input class="file-path validate" type="text" :placeholder="_h('Upload document to translate')" v-model="fileName">
+                                                                        </div>
+                                                                </div>
+                                                                <button type="button" class="btn waves-effect waves-light mt-2" @click="translateFile" :disabled="!selectedFile || disableInput">
+                                                                        {{ _h("Translate File") }}
+                                                                </button>
+                                                                <div class="mt-3" v-if="translatedFileUrl">
+                                                                        <a :href="translatedFileUrl" class="btn waves-effect waves-green green" download>
+                                                                                {{ _h("Download Translated File") }} <i class="material-icons right">file_download</i>
+                                                                        </a>
+                                                                </div>
+                                                                <div class="position-relative mt-3">
+                                                                        <div class="progress translate" v-if="loadingFileTranslation">
+                                                                                <div class="indeterminate"></div>
+                                                                        </div>
+                                                                </div>
+                                                        </div>
+                                                </div>
+                                        </form>
+                                </div>
+                        </div>
+                </div>
+        </div>
+        </main>
+
+        <footer class="page-footer">
+                <div class="container">
+                        <div class="row">
+                                <div class="col l12 s12">
+                                        <h5 class="white-text">tzima translate <span style="font-size: 16px">v{{ version }}</span></h5>
+                                        <p class="grey-text text-lighten-4">Powered by 4tios.gr</p>
+                                </div>
+                        </div>
+                </div>
+                <div class="footer-copyright center">
+                        <p class="white-text">
+                                Powered by LibreTranslate & Argos Translate
+                        </p>
+                </div>
+        </footer>
+
+        <script src="{{ url_for('static', filename='js/materialize.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/prism.min.js') }}"></script>
+        <script src="js/app.js?v={{ version }}"></script>
+</body>
+</html>
